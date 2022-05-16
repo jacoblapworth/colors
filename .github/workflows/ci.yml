@@ -1,0 +1,32 @@
+name: CI
+on:
+  pull_request_target:
+  workflow_dispatch:
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Use Node
+        uses: actions/setup-node@v2.4.1
+        with:
+          node-version: '14'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Next build cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}
+      - name: Build
+        run: npm run build
+      - name: Project cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ github.workspace }}/*
+          key: ${{ github.sha }}
